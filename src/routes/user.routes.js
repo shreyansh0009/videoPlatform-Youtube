@@ -12,7 +12,7 @@ router.route("/register").post(upload.fields([
         maxCount: 1
     },
     {
-        name: "cover image",
+        name: "coverImage",
         maxCount: 1
     }  // now we can upload files.
 ]),registerUser)

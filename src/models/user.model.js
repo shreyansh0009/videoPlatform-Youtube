@@ -25,7 +25,8 @@ const userSchema = mongoose.Schema(
       trim: true,
     },
     avatar: {
-      type: String, // using cloud service to upload image and then get url from there and store in it.
+      type: String,
+      required: true // using cloud service to upload image and then get url from there and store in it.
     },
     coverImage: {
       type: String,

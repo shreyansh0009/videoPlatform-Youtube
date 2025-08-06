@@ -1,6 +1,8 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { apiError } from "../utils/apiError.js";
 import { User } from "../models/user.model.js";
+import { uploadFile } from "../utils/fileUpload.js";
+import { apiResponse } from "../utils/apiResponse.js";
 
 // asyncHandler is higher order function, that accepts fun as argument, that's why a callback fun.
 const registerUser = asyncHandler(async (req, res) => {
@@ -33,26 +35,56 @@ const registerUser = asyncHandler(async (req, res) => {
   //     res.send({message: "Details fetched!"})
   // }
 
-  //2nd approach, best approach
+  //2nd approach, best approach, checking for empty fields
   if (
     [userName, email, fullName, password].some((field) => field?.trim() === "")
   ) {
     throw new apiError(400, "All fields are required and cannot be empty!");
   }
 
-  //ii. checking user exists or not?
+  //iii. checking user exists or not?
   //   User.findOne({email}) //only accept one field, what if we want to send many field?
   const isExists = await User.findOne({ $or: [{ userName }, { email }] });
   if (isExists) {
     throw new apiError(409, "User already exists!");
   }
 
-  //iii. Creating user...
+  // we can also check, email valid or not and password has length: 8 or not and many more... these are optionals.
+
+  //iv. checking for avatar image or cover image, uploaded or not.
+  const avatarLocalPath = req.files?.avatar[0]?.path;
+  const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
+
+  if (!avatarLocalPath) {
+    throw new apiError(400, "Avatar file is required");
+  }
+
+  const avatarUpload = await uploadFile(avatarLocalPath);
+
+  //iv. checking user uploaded avatar or not
+  if (!avatarUpload) {
+    throw new apiError(400, "Avatar file upload failed!");
+  }
+
+  // defining coverImage as null, because it's optional and url as empty string
+  let coverImageUpload = null;
+  let coverImageUrl = "";
+  if(coverImageLocalPath) {
+    coverImageUpload = await uploadFile(coverImageLocalPath);
+  }
+  if(coverImageUpload) {
+    coverImageUrl = coverImageUpload.url;
+  }
+   
+
+  //v. now creating user in database.
   const user = await User.create({
-    fullName,
+    fullName, 
     email,
     password,
     username: userName,
+    avatar: avatarUpload.url,
+    coverImage: coverImageUrl
   });
 
   //iv. validating user created or not?
@@ -64,11 +96,9 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new apiError(500, "Something went wrong while registering the user");
   }
 
-  // we can also check, email valid or not and password has length: 8 or not and many more... these are optionals.
-
-  res.status(200).json({
+  res.status(201).json({
     success: true,
-    message: "Details fetched successfully",
+    message: "User Registered successfully",
     data: createdUser,
   });
 });
