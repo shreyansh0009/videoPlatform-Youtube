@@ -42,7 +42,7 @@ const userSchema = mongoose.Schema(
         // watch history is an array of video id's
       },
     ],
-    refreshTokens: {
+    refreshToken: {
       type: String,
     },
   },
@@ -80,7 +80,7 @@ userSchema.methods.generateAccessToken = async function () {
       fullName: this.fullName,
     },
     process.env.SECRET_ACCESS_TOKEN,
-    { expiresIn: ACCESS_TOKEN_EXPIRY }
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
   );
 };
 
@@ -92,7 +92,7 @@ userSchema.methods.generateRefreshToken = async function () {
     },
     process.env.SECRET_REFRESH_TOKEN,
     {
-      expiresIn: REFRESH_TOKEN_EXPIRY,
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
     }
   );
 };
