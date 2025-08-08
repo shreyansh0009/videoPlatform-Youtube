@@ -3,7 +3,7 @@ import { apiError } from "../utils/apiError.js";
 import { User } from "../models/user.model.js";
 import { uploadFile } from "../utils/fileUpload.js";
 import { apiResponse } from "../utils/apiResponse.js";
-
+import jwt from "jsonwebtoken";
 // asyncHandler is higher order function, that accepts fun as argument, that's why a callback fun.
 //User Registeration...
 const registerUser = asyncHandler(async (req, res) => {
@@ -203,4 +203,55 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new apiResponse(200, "User logged out successfully!"));
 });
 
-export { registerUser, loginUser, logoutUser };
+const refreshAccessToken = asyncHandler(async (req, res) => {
+  const incomingRefreshToken =
+    req.cookies.refreshToken || req.body.refreshToken;
+
+  if (!incomingRefreshToken) {
+    throw new apiError(401, "unauthorized request!!");
+  }
+
+  try {
+    const decodedIncomingRefreshToken = jwt.verify(
+      incomingRefreshToken,
+      process.env.SECRET_REFRESH_TOKEN
+    );
+    if (!decodedIncomingRefreshToken) {
+      throw new apiError(401, "Invalid Refresh Token!");
+    }
+
+    const user = await User.findById(decodedIncomingRefreshToken?._id);
+
+    if (!user) {
+      throw new apiError(401, "Invalid user!");
+    }
+
+    if (decodedIncomingRefreshToken !== user.refreshToken) {
+      throw new apiError(401, "Token is invalid or may modified!");
+    }
+
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
+
+    const { accessToken, newRefreshToken } =
+      await generateAccessAndRefreshToken(user._id);
+
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken)
+      .cookie("refreshToken", newRefreshToken)
+      .json(
+        new apiResponse(
+          200,
+          { accessToken, refreshToken: newRefreshToken },
+          "Access Token Refreshed!"
+        )
+      );
+  } catch (error) {
+    throw new apiError(401, error?.message || "Something went wrong!")
+  }
+});
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken };
