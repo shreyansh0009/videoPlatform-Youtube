@@ -3,6 +3,7 @@ import { apiError } from "../utils/apiError.js";
 import { User } from "../models/user.model.js";
 import { uploadFile } from "../utils/fileUpload.js";
 import { apiResponse } from "../utils/apiResponse.js";
+import verifyJwt from "../middlewares/auth.middleware.js";
 
 // asyncHandler is higher order function, that accepts fun as argument, that's why a callback fun.
 //User Registeration...
@@ -178,4 +179,29 @@ const loginUser = asyncHandler(async (req, res) => {
     );
 });
 
-export { registerUser, loginUser };
+// loging out user using middleware..
+const logoutUser = asyncHandler(async (req, res) => {
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        refreshToken: undefined,
+      },
+    },
+    {
+      new: true,
+    }
+  );
+  const options = {
+    // httpOnly: used for, client won't able to edit cookies in his browser, cookies can only editable from server
+    httpOnly: true,
+    secure: true,
+  };
+  return res
+    .status(201)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new apiResponse(200, "User logged out successfully!"));
+});
+
+export { registerUser, loginUser, logoutUser };
