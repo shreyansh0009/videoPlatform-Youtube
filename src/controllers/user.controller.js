@@ -3,7 +3,6 @@ import { apiError } from "../utils/apiError.js";
 import { User } from "../models/user.model.js";
 import { uploadFile } from "../utils/fileUpload.js";
 import { apiResponse } from "../utils/apiResponse.js";
-import verifyJwt from "../middlewares/auth.middleware.js";
 
 // asyncHandler is higher order function, that accepts fun as argument, that's why a callback fun.
 //User Registeration...
