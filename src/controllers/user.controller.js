@@ -250,12 +250,10 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         )
       );
   } catch (error) {
-    throw new apiError(401, error?.message || "Something went wrong!")
+    throw new apiError(401, error?.message || "Something went wrong!");
   }
 });
 
-const changeCurrentPassword = asyncHandler(async (req, res) => {
-  
-})
+const changeCurrentPassword = asyncHandler(async (req, res) => {});
 
 export { registerUser, loginUser, logoutUser, refreshAccessToken };

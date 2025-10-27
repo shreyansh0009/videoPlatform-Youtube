@@ -7,6 +7,7 @@ dotenv.config({
     path: './.env'
 });
 
+
 const connectDB = async () => {
     try {
         const connectionData = await mongoose.connect(`${process.env.MONGODB_URI}/${chaiBackend}`)

@@ -38,31 +38,29 @@
 //   }
 // })();
 
-
 // 2nd process of connecting db, more professional and effcient.
 import dotenv from "dotenv";
-dotenv.config({path: './.env'});
+dotenv.config({ path: "./.env" });
 import connectDB from "./db/index.js";
 import { app } from "./app.js";
 
-connectDB()  // this is async-await fun, it always return promise.
-.then(() => {
+connectDB() // this is async-await fun, it always return promise.
+  .then(() => {
     app.on("error", (err) => {
-        console.log("Error: ", err);
-        throw err
-    })
+      console.log("Error: ", err);
+      throw err;
+    });
     app.listen(process.env.PORT || 8000, () => {
-        console.log(`Server is listning on port: ${process.env.PORT}`);
-    })
+      console.log(`Server is listning on port: ${process.env.PORT}`);
+    });
     app.get("/", (req, res) => {
-        try {
-            res.send("Database Connected!!")
-        } catch (error) {
-            console.log(error);
-            
-        }
-    })
-})
-.catch((err) => {
+      try {
+        res.send("Database Connected!!");
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  })
+  .catch((err) => {
     console.log("Mongo connection failed! ", err);
-})
+  });
